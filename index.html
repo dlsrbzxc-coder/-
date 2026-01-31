@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>체외진단검사 학습앱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            overflow-x: hidden;
+        }
+        
+        .phone-frame {
+            max-width: 400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+            min-height: 700px;
+        }
+        
+        .notch {
+            background: #000;
+            height: 30px;
+            border-radius: 0 0 15px 15px;
+            width: 150px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #333;
+            background: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .search-bar {
+            background: #f0f0f0;
+            margin: 20px;
+            padding: 12px 15px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-bar:hover {
+            background: #e0e0e0;
+        }
+        
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 20px 100px 20px;
+        }
+        
+        .category-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .category-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .category-card:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .category-card:nth-child(4) {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .category-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .category-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 400px;
+            width: 100%;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px;
+        }
+        
+        .nav-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+        
+        .nav-item.active .nav-icon {
+            color: #667eea;
+        }
+        
+        .nav-item.active .nav-label {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            background: #f0f0f0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+        
+        .back-button:hover {
+            background: #e0e0e0;
+            transform: scale(1.1);
+        }
+        
+        .list-container {
+            padding: 0 20px 100px 20px;
+        }
+        
+        .list-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .list-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .list-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .list-subtitle {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .detail-container {
+            padding: 0 20px 100px 20px;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .favorite-button {
+            background: white;
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .favorite-button:hover {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .favorite-button.active {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-bottom: 10px;
+            padding: 0 20px;
+        }
+        
+        .detail-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding: 0 20px;
+        }
+        
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .tag {
+            background: #e8f4f8;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .detail-section {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .image-placeholder {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 40px;
+        }
+        
+        .section-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 20px;
+        }
+        
+        .count {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        
+        <!-- 홈 화면 -->
+        <div class="screen active" id="home-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <div class="header">
+                <h1>체외진단 학습센터</h1>
+                <p>필요한 정보를 빠르게 찾아보세요</p>
+            </div>
+            
+            <div class="search-bar" onclick="goToScreen('search-screen')">
+                <span>🔍</span>
+                <span style="color: #999;">시약, 장비, 검사명 검색...</span>
+            </div>
+            
+            <div class="category-grid">
+                <div class="category-card" onclick="goToCategory('chemistry', '화학검사')">
+                    <div class="category-icon">🧪</div>
+                    <div class="category-name">화학검사</div>
+                </div>
+                <div class="category-card" onclick="goToCategory('immunity', '면역검사')">
+                    <div class="category-icon">🛡️</div>
+                    <div class="category-name">면역검사</div>
+                </div>
+                <div class="category-card" onclick="goToCategory('blood', '혈액검사')">
+                    <div class="category-icon">🩸</div>
+                    <div class="category-name">혈액검사</div>
+                </div>
+                <div class="category-card" onclick="goToCategory('equipment', '장비정보')">
+                    <div class="category-icon">⚙️</div>
+                    <div class="category-name">장비정보</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 카테고리 리스트 화면 -->
+        <div class="screen" id="category-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <div class="back-button" onclick="goToScreen('home-screen')">←</div>
+            
+            <div class="section-header">
+                <h2 id="category-title">화학검사</h2>
+                <span class="count" id="item-count">총 24개</span>
+            </div>
+            
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" placeholder="시약 검색..." id="category-search">
+            </div>
+            
+            <div class="list-container" id="category-list">
+                <!-- JavaScript로 동적 생성 -->
+            </div>
+        </div>
+        
+        <!-- 상세 정보 화면 -->
+        <div class="screen" id="detail-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <div class="detail-header">
+                <div class="back-button" onclick="goBack()">←</div>
+                <div class="favorite-button" id="favorite-btn" onclick="toggleFavorite()">♡</div>
+            </div>
+            
+            <div class="breadcrumb" id="detail-breadcrumb">화학검사 > Glucose</div>
+            
+            <div class="detail-title" id="detail-item-title">Glucose (포도당)</div>
+            
+            <div class="tags" id="detail-tags">
+                <!-- JavaScript로 동적 생성 -->
+            </div>
+            
+            <div class="detail-container" id="detail-content">
+                <!-- JavaScript로 동적 생성 -->
+            </div>
+        </div>
+        
+        <!-- 검색 화면 -->
+        <div class="screen" id="search-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <div class="header">
+                <h1>🔍 검색</h1>
+            </div>
+            
+            <div class="search-bar" style="background: white; border: 2px solid #667eea;">
+                <span>🔍</span>
+                <input type="text" placeholder="시약, 장비, 검사명 검색..." id="main-search" style="width: 100%;">
+            </div>
+            
+            <div class="list-container" id="search-results">
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>검색어를 입력하세요</h3>
+                    <p style="margin-top: 10px;">시약명, 장비명, 검사명으로 검색할 수 있습니다</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 즐겨찾기 화면 -->
+        <div class="screen" id="favorites-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 🔋</span>
+            </div>
+            
+            <div class="header">
+                <h1>⭐ 즐겨찾기</h1>
+                <p id="favorites-count">자주 보는 항목 (0개)</p>
+            </div>
+            
+            <div class="list-container" id="favorites-list">
+                <div class="empty-state">
+                    <div class="empty-icon">⭐</div>
+                    <h3>즐겨찾기가 비어있습니다</h3>
+                    <p style="margin-top: 10px;">상세 페이지에서 ♥ 버튼을 눌러 추가하세요</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 하단 네비게이션 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchNav('home-screen', 0)">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">홈</div>
+            </div>
+            <div class="nav-item" onclick="switchNav('search-screen', 1)">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-label">검색</div>
+            </div>
+            <div class="nav-item" onclick="switchNav('favorites-screen', 2)">
+                <div class="nav-icon">⭐</div>
+                <div class="nav-label">즐겨찾기</div>
+            </div>
+            <div class="nav-item" onclick="alert('설정 기능은 곧 추가될 예정입니다!')">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-label">설정</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 데이터베이스
+        const database = {
+            chemistry: [
+                { id: 1, name: 'Glucose (포도당)', method: 'GOD-POD 효소법', category: '화학검사', 
+                  principle: 'GOD-POD 효소법을 이용한 비색정량법입니다.\n\nGlucose + O₂ → Gluconic acid + H₂O₂\nH₂O₂ + 4-AP + Phenol → Quinoneimine + H₂O',
+                  procedure: '1. 시약 준비 및 온도 평형\n2. 검체와 시약 혼합\n3. 37°C, 5분 반응\n4. 505nm에서 측정',
+                  tags: ['화학검사', '효소법', '자동분석기']
+                },
+                { id: 2, name: 'Total Cholesterol', method: 'CHOD-POD 효소법', category: '화학검사',
+                  principle: 'Cholesterol을 효소법으로 측정합니다.\n\nCholesterol ester → Cholesterol + Fatty acid\nCholesterol + O₂ → Cholest-4-en-3-one + H₂O₂',
+                  procedure: '1. 시약과 검체 혼합\n2. 37°C, 5분 반응\n3. 500nm에서 흡광도 측정',
+                  tags: ['화학검사', '효소법', '지질검사']
+                },
+                { id: 3, name: 'AST/GOT', method: 'UV Rate Method', category: '화학검사',
+                  principle: 'UV 속도법을 이용한 효소 활성도 측정입니다.\n\nL-Aspartate + α-Ketoglutarate ⇄ Oxaloacetate + L-Glutamate',
+                  procedure: '1. 검체와 기질 혼합\n2. 37°C에서 연속 측정\n3. 340nm에서 흡광도 변화 측정',
+                  tags: ['화학검사', '효소', '간기능']
+                },
+                { id: 4, name: 'ALT/GPT', method: 'UV Rate Method', category: '화학검사',
+                  principle: 'UV 속도법을 이용한 효소 활성도 측정입니다.\n\nL-Alanine + α-Ketoglutarate ⇄ Pyruvate + L-Glutamate',
+                  procedure: '1. 검체와 기질 혼합\n2. 37°C에서 연속 측정\n3. 340nm에서 흡광도 변화 측정',
+                  tags: ['화학검사', '효소', '간기능']
+                },
+                { id: 5, name: 'Creatinine', method: 'Jaffe Method', category: '화학검사',
+                  principle: 'Jaffe 반응을 이용한 비색법입니다.\n\nCreatinine + Picric acid → Red complex (알칼리 조건)',
+                  procedure: '1. 검체와 피크르산 반응\n2. 알칼리 첨가\n3. 510nm에서 측정',
+                  tags: ['화학검사', '신기능', '비색법']
+                },
+                { id: 6, name: 'BUN (Urea)', method: 'Urease-GLDH법', category: '화학검사',
+                  principle: 'Urease를 이용한 효소법입니다.\n\nUrea + H₂O → 2NH₃ + CO₂',
+                  procedure: '1. Urease로 요소 분해\n2. 생성된 암모니아 측정\n3. 340nm에서 흡광도 측정',
+                  tags: ['화학검사', '신기능', '효소법']
+                }
+            ],
+            immunity: [
+                { id: 11, name: 'CRP (C-Reactive Protein)', method: 'Immunoturbidimetry', category: '면역검사',
+                  principle: '면역비탁법을 이용한 CRP 측정입니다.\n\nCRP + 항-CRP 항체 → 면역복합체 형성',
+                  procedure: '1. 검체와 항체 반응\n2. 탁도 증가 측정\n3. 340nm 또는 570nm에서 측정',
+                  tags: ['면역검사', '염증지표', '비탁법']
+                },
+                { id: 12, name: 'ASO (Anti-Streptolysin O)', method: 'Latex Agglutination', category: '면역검사',
+                  principle: 'Latex 응집법을 이용한 ASO 항체 측정입니다.',
+                  procedure: '1. Latex 시약과 검체 혼합\n2. 응집 반응 관찰\n3. 역가 측정',
+                  tags: ['면역검사', '항체', 'Latex법']
+                },
+                { id: 13, name: 'RF (Rheumatoid Factor)', method: 'Latex Agglutination', category: '면역검사',
+                  principle: 'Latex 응집법을 이용한 류마티스 인자 측정입니다.',
+                  procedure: '1. Latex 시약과 검체 혼합\n2. 응집 반응 관찰\n3. 정성 또는 정량 분석',
+                  tags: ['면역검사', '류마티스', 'Latex법']
+                }
+            ],
+            blood: [
+                { id: 21, name: 'CBC (Complete Blood Count)', method: 'Impedance Method', category: '혈액검사',
+                  principle: '전기저항법을 이용한 혈구 계수입니다.\n\n세포가 통과할 때 전기저항 변화를 측정',
+                  procedure: '1. 검체 희석\n2. Aperture 통과\n3. 전기신호 분석\n4. 자동 계수',
+                  tags: ['혈액검사', '혈구계수', '자동화']
+                },
+                { id: 22, name: 'ESR (적혈구침강속도)', method: 'Westergren Method', category: '혈액검사',
+                  principle: '적혈구의 침강 속도를 측정합니다.\n\n1시간 동안 적혈구가 침강한 거리를 mm로 측정',
+                  procedure: '1. 항응고 처리된 혈액 준비\n2. Westergren tube에 주입\n3. 1시간 후 침강 거리 측정',
+                  tags: ['혈액검사', '염증지표', '수기법']
+                }
+            ],
+            equipment: [
+                { id: 31, name: 'CS-240 자동화학분석기', method: '흡광도법', category: '장비정보',
+                  principle: '광원에서 나온 빛이 반응 큐벳을 통과하며 시약과 검체의 반응 정도를 측정합니다.\n\n분광광도계 방식으로 340-800nm 파장 사용',
+                  procedure: '• 측정 방식: 흡광도법\n• 처리량: 240 test/hour\n• 시약 위치: 48개\n• 검체 용량: 2-50μL',
+                  maintenance: '• 매일: 큐벳 세척, 폐액 확인\n• 매주: 프로브 세척\n• 매월: 광학계 점검',
+                  tags: ['화학분석기', '자동화', '흡광도']
+                },
+                { id: 32, name: 'BC-6800 혈구분석기', method: 'Impedance + Flow Cytometry', category: '장비정보',
+                  principle: '전기저항법과 유세포 분석법을 결합한 혈구 분석입니다.\n\nWBC 5-diff, RBC, PLT 등을 자동 측정',
+                  procedure: '• 처리량: 80 samples/hour\n• WBC 분류: 5-diff\n• 검체량: 20μL\n• 파라미터: 27종',
+                  maintenance: '• 매일: 프라이밍, QC\n• 매주: Aperture 세척\n• 매월: 정도관리',
+                  tags: ['혈액분석기', '5-diff', '자동화']
+                }
+            ]
+        };
+
+        let currentCategory = '';
+        let currentItem = null;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let screenHistory = [];
+
+        // 화면 전환
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId !== 'home-screen') {
+                screenHistory.push(screenId);
+            }
+        }
+
+        // 뒤로가기
+        function goBack() {
+            if (screenHistory.length > 1) {
+                screenHistory.pop();
+                const previousScreen = screenHistory[screenHistory.length - 1];
+                goToScreen(previousScreen);
+            } else {
+                goToScreen('category-screen');
+            }
+        }
+
+        // 네비게이션 전환
+        function switchNav(screenId, index) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[index].classList.add('active');
+            goToScreen(screenId);
+            
+            if (screenId === 'favorites-screen') {
+                loadFavorites();
+            }
+        }
+
+        // 카테고리 이동
+        function goToCategory(categoryId, categoryName) {
+            currentCategory = categoryId;
+            document.getElementById('category-title').textContent = categoryName;
+            
+            const items = database[categoryId] || [];
+            document.getElementById('item-count').textContent = `총 ${items.length}개`;
+            
+            const listContainer = document.getElementById('category-list');
+            listContainer.innerHTML = '';
+            
+            items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-item';
+                itemDiv.onclick = () => showDetail(item);
+                itemDiv.innerHTML = `
+                    <div>
+                        <div class="list-title">${item.name}</div>
+                        <div class="list-subtitle">${item.method}</div>
+                    </div>
+                    <div>→</div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+            
+            goToScreen('category-screen');
+        }
+
+        // 상세 정보 표시
+        function showDetail(item) {
+            currentItem = item;
+            
+            document.getElementById('detail-breadcrumb').textContent = `${item.category} > ${item.name}`;
+            document.getElementById('detail-item-title').textContent = item.name;
+            
+            // 태그
+            const tagsContainer = document.getElementById('detail-tags');
+            tagsContainer.innerHTML = '';
+            item.tags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.className = 'tag';
+                tagSpan.textContent = tag;
+                tagsContainer.appendChild(tagSpan);
+            });
+            
+            // 즐겨찾기 버튼
+            const favBtn = document.getElementById('favorite-btn');
+            if (favorites.some(f => f.id === item.id)) {
+                favBtn.classList.add('active');
+                favBtn.textContent = '♥';
+            } else {
+                favBtn.classList.remove('active');
+                favBtn.textContent = '♡';
+            }
+            
+            // 상세 내용
+            const contentContainer = document.getElementById('detail-content');
+            contentContainer.innerHTML = `
+                <div class="image-placeholder">📷</div>
+                
+                <div class="detail-section">
+                    <div class="section-title">📋 검사 원리</div>
+                    <div class="section-content">${item.principle.replace(/\n/g, '<br>')}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="section-title">⚙️ ${item.category === '장비정보' ? '장비 사양' : '검사 방법'}</div>
+                    <div class="section-content">${item.procedure.replace(/\n/g, '<br>')}</div>
+                </div>
+                
+                ${item.maintenance ? `
+                <div class="detail-section">
+                    <div class="section-title">🔧 유지보수</div>
+                    <div class="section-content">${item.maintenance.replace(/\n/g, '<br>')}</div>
+                </div>
+                ` : ''}
+            `;
+            
+            goToScreen('detail-screen');
+        }
+
+        // 즐겨찾기 토글
+        function toggleFavorite() {
+            if (!currentItem) return;
+            
+            const index = favorites.findIndex(f => f.id === currentItem.id);
+            const favBtn = document.getElementById('favorite-btn');
+            
+            if (index > -1) {
+                favorites.splice(index, 1);
+                favBtn.classList.remove('active');
+                favBtn.textContent = '♡';
+            } else {
+                favorites.push(currentItem);
+                favBtn.classList.add('active');
+                favBtn.textContent = '♥';
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // 즐겨찾기 로드
+        function loadFavorites() {
+            const listContainer = document.getElementById('favorites-list');
+            document.getElementById('favorites-count').textContent = `자주 보는 항목 (${favorites.length}개)`;
+            
+            if (favorites.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⭐</div>
+                        <h3>즐겨찾기가 비어있습니다</h3>
+                        <p style="margin-top: 10px;">상세 페이지에서 ♥ 버튼을 눌러 추가하세요</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            listContainer.innerHTML = '';
+            favorites.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-item';
+                itemDiv.onclick = () => showDetail(item);
+                itemDiv.innerHTML = `
+                    <div>
+                        <div class="list-title">${item.name}</div>
+                        <div class="list-subtitle">${item.category}</div>
+                    </div>
+                    <div style="color: #e74c3c; font-size: 20px;">♥</div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        // 검색 기능
+        document.getElementById('main-search').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h3>검색어를 입력하세요</h3>
+                        <p style="margin-top: 10px;">시약명, 장비명, 검사명으로 검색할 수 있습니다</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const allItems = [...database.chemistry, ...database.immunity, ...database.blood, ...database.equipment];
+            const results = allItems.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.method.toLowerCase().includes(query)
+            );
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h3>검색 결과가 없습니다</h3>
+                        <p style="margin-top: 10px;">"${e.target.value}"에 대한 결과를 찾을 수 없습니다</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsContainer.innerHTML = `<h3 style="padding: 20px; color: #2c3e50;">검색 결과 (${results.length}개)</h3>`;
+            results.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-item';
+                itemDiv.onclick = () => showDetail(item);
+                itemDiv.innerHTML = `
+                    <div>
+                        <div class="list-title">${item.name}</div>
+                        <div class="list-subtitle">${item.category} > ${item.method}</div>
+                    </div>
+                    <div>→</div>
+                `;
+                resultsContainer.appendChild(itemDiv);
+            });
+        });
+
+        // 카테고리 검색
+        document.getElementById('category-search').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const items = database[currentCategory] || [];
+            const listContainer = document.getElementById('category-list');
+            
+            if (!query) {
+                listContainer.innerHTML = '';
+                items.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'list-item';
+                    itemDiv.onclick = () => showDetail(item);
+                    itemDiv.innerHTML = `
+                        <div>
+                            <div class="list-title">${item.name}</div>
+                            <div class="list-subtitle">${item.method}</div>
+                        </div>
+                        <div>→</div>
+                    `;
+                    listContainer.appendChild(itemDiv);
+                });
+                return;
+            }
+            
+            const results = items.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.method.toLowerCase().includes(query)
+            );
+            
+            listContainer.innerHTML = '';
+            results.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-item';
+                itemDiv.onclick = () => showDetail(item);
+                itemDiv.innerHTML = `
+                    <div>
+                        <div class="list-title">${item.name}</div>
+                        <div class="list-subtitle">${item.method}</div>
+                    </div>
+                    <div>→</div>
+                `;
+                listContainer.appendChild(itemDiv);
+            });
+        });
+    </script>
+</body>
+</html>
